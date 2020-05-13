@@ -1,0 +1,366 @@
+\chapter{НАЗВАНИЕ ГЛАВЫ}\label{chap3}
+
+\section{Эквивалентная формулировка задачи по сгенерированным данным}\label{2sec:data-driven-approach} %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Для некоторых задач модель в пространстве состояний или неизвестна заранее, или слишком сложна. Зададимся целью привести метод решения задачи, схожей рассматриваемой в \ref{2sec:problem-formulation}, в этом случае, основой нам послужит поведенческий подход к динамическим системам, изложенный в \ref{chap1}
+
+Будем считать, что наши сведения о системе сводятся к верхней оценке её размерности $n$ и одной предварительно сгенерированной траектории $\{u^d(t), y^d(t)\}_{t = 0}^{T^d - 1}$, причём эта траектория измерена точно. Что до траекторий $\{u(0), u(1), \ldots, u(\tau-1), y(0), y(1), \ldots, y(\tau-1)\} = \{u_\tau, y_\tau \}$ в момент $\tau$ в процессе управления системой, их будем считать известными с точностью до ограниченной ошибки: нам доступны лишь $\{u_\tau, \tilde{y}_\tau\}$, где $\tilde{y}(t) = y(t) + \xi(t), t = 0,  \ldots, \tau -1$.
+
+Задачей, как и в прошлом пункте, ставится минимизация квадратичного критерия качества при гарантированном соблюдении линейных условий на входные и выходные сигналы.
+
+Теорема \ref{fundamental theorem} в непосредственно приведённой формулировке позволяет проверять любую траекторию фиксированной длины на принадлежность системе. В нашем случае стоит обратная задача: дабы определить, допустима ли управляющая программа $u$, хотелось бы уметь вычислять множество возможных выходных компонент $y$, соответствующих ей. 
+
+Сделать это позволяет следующая модификация результата
+Теорема \ref{trajectory check} позволяет проверить любую траекторию на принадлежность системе $G$. Этот результат можно использовать для генерации множества возможных траекторий $\{u_T, y_T\}$ длины $T$ с некоторой фиксированной начальной частью $\{u^p_\tau, y^p_\tau\}$, которую мы будем именовать "прошлой" частью длины $\tau$. Нефиксированную часть траектории $\{u(\tau), \ldots, u(T-1), y(\tau), \ldots, y(T-1)\}$ будем обозначать $\{u_\tau^f, y_\tau^f\}$, и обращаться к ней как к "будущей" части траектории. 
+Соответствующим образом будем делить на "прошлое" и "будущее" для момента $\tau$ и компоненты векторов $u, y$
+$$u = \begin{pmatrix}u(0) \\
+\vdots \\
+u(\tau-1) \\
+ \hline 
+u(\tau)\\
+\vdots \\
+u(T-1)
+\end{pmatrix} = 
+\begin{pmatrix}
+u_{\tau}^p \\
+\hline
+ u_{\tau}^f
+\end{pmatrix},\quad y = \begin{pmatrix}y(0) \\
+	\vdots \\
+	y(\tau-1) \\
+ 	\hline 
+	y(\tau)\\
+	\vdots \\
+	y(T-1)
+	\end{pmatrix} = 
+	\begin{pmatrix}
+	y_{\tau}^p \\
+	\hline
+ 	y_{\tau}^f
+	\end{pmatrix},$$
+и строки матриц Ганкеля
+\begin{equation}
+H_T(u^d) = \begin{pmatrix}
+  u^d(0) & \cdots & u^d(T^d-T)\\
+  \vdots & \ddots & \vdots \\
+  u^d(\tau-1) & \cdots & u(\tau-1 + T^d - T) \\
+  \hline
+  u^d(\tau) & \cdots & u(\tau + T^d-T)\\
+  \vdots & \ddots & \vdots \\
+  u^d(T-1) & \cdots & u^d(T^d-1)
+\end{pmatrix} = 
+		\begin{pmatrix}
+		U_{\tau}^p \\
+		U_{\tau}^f
+		\end{pmatrix},  
+\end{equation}
+\begin{equation}
+H_T(y^d) = \begin{pmatrix}
+  y^d(0) & \cdots & y^d(T^d-T)\\
+  \vdots & \ddots & \vdots \\
+  y^d(\tau-1) & \cdots & y(\tau-1 + T^d - T) \\
+  \hline
+  y^d(\tau) & \cdots & y(\tau + T^d-T)\\
+  \vdots & \ddots & \vdots \\
+  y^d(T-1) & \cdots & y^d(T^d-1)
+\end{pmatrix} = 
+		\begin{pmatrix}
+		Y_{\tau}^p \\
+		Y_{\tau}^f
+		\end{pmatrix},  
+\end{equation}
+
+Согласно теореме \ref{trajectory check}, $\{u_{\tau}^p, u_{\tau}^f, y_{\tau}^p, y_{\tau}^f\}$ является траекторией системы $G$ тогда и только тогда, когда у уравнения 
+\begin{equation}\label{traj-cond}
+\begin{pmatrix}
+U_{\tau}^p \\
+Y_{\tau}^p \\
+U_{\tau}^f \\
+Y_{\tau}^f
+\end{pmatrix} \alpha = \begin{pmatrix}
+u_{\tau}^p \\
+y_{\tau}^p \\
+u_{\tau}^f \\
+y_{\tau}^f
+\end{pmatrix}
+\end{equation}
+есть решение $\alpha \in \mathbb{R}^{T^d - T +1}$.
+Посемy для построения возможных траекторий можно воспользоваться следующим алгоритмом.\\
+Шаг 1. Найти некоторое решение системы линейных алгебраических уравнений
+\begin{equation}
+\begin{pmatrix}
+U_{\tau}^p \\
+Y_{\tau}^p \\
+U_{\tau}^f 
+\end{pmatrix} \alpha = \begin{pmatrix}
+u_{\tau}^p \\
+y_{\tau}^p \\
+u_{\tau}^f 
+\end{pmatrix}
+\end{equation}
+Шаг 2. Вычислить $y_{\tau}^f = Y_{\tau}^f \alpha$. Получили одну из возможных траекторий.
+
+\begin{remark}
+Очевидно, множество решений $\alpha$ всегда не пусто, а вот для единственности решения, которая представляет особый практический интерес, нужно наложить некоторые условия. Поскольку для линейной системы размерности $n$ траектория длины $n$ однозначно определяет начальное состояние, то для обеспечения единственности достаточно потребовать $\tau \geq n$.  
+\end{remark}
+
+Таким образом, вместо явного задания динамики системы моделью в пространстве состояний, мы пользуемся неявным описанием вида \ref{traj-cond} поведения системы, поскольку ограничить множество допустимых начальных состояний в явном виде также не представляется возможным, мы фиксируем их неявно известной до до начала управления $\tau$ конечной траекторией $\{u_\tau^p, y_\tau^p\}.$ 
+
+Используем ту же стратегию управления, что и в предыдущем пункте, а именно, в каждый момент времени $\tau \leq t \leq T$ мы решаем следующую задачу оптимального управления по разомкнутому контуру:
+\begin{equation}\label{dd-oc-at-tau}
+\min\limits_u u^Tu 
+\end{equation}
+\begin{equation}
+\begin{pmatrix}
+U_\tau^p \\
+Y_\tau^p \\
+U_\tau^f \\
+\end{pmatrix} \alpha = \begin{pmatrix}
+u_\tau^p \\
+y_\tau^p \\
+u \\
+\end{pmatrix}
+\end{equation}
+\begin{equation}
+\tilde{y}_\tau^p = y_\tau^p + \xi_\tau,
+\end{equation}
+\begin{equation}
+G_\tau Y_\tau^f \alpha \leq g_\tau \quad \forall \alpha, -\varepsilon\mathbbm{1} \leq \xi_\tau \leq \varepsilon \mathbbm{1},
+\end{equation}
+где матрица 
+\[
+G_\tau = 
+\begin{pmatrix}
+  \begin{matrix}
+  G(\tau)
+  \end{matrix}
+  & \rvline & \bigzero & \rvline & \cdots & \rvline & \bigzero\\
+\hline
+  \bigzero & \rvline &
+  \begin{matrix}
+    G(\tau + 1)
+  \end{matrix}
+  & \rvline & \cdots  & \rvline & \bigzero \\
+\hline
+  \vdots & \rvline & \vdots & \rvline & 
+  \begin{matrix}
+    \ddots
+  \end{matrix} 
+  & \rvline & \bigzero \\
+\hline
+  \bigzero & \rvline & \bigzero & \rvline & \bigzero & \rvline &
+  \begin{matrix}
+    G(T-1)
+  \end{matrix}
+\end{pmatrix}
+\]
+вектор $g_{\tau} = (g(\tau), g(\tau+1), \cdots, g(T-1)).$ 
+
+Из полученного в момент $\tau$ оптимального воздействия $u^0 = (u^0(\tau), u^0(\tau+1), \ldots, u^0(T-1))$ мы применяем к системе $u^p(\tau) = u^0(\tau).$ Переходим к решению задачи \ref{dd-oc-at-tau} в момент $\tau+1$, зная траекторию $\{u^p_{\tau+1}, y^p_{\tau+1}\}$. Таким образом, если существовало допустимое воздействие в момент $\tau$, то гарантировано существует допустимое воздействие в момент $\tau + 1$, причём значение критерия качества на каждом шагу не увеличивается.
+
+Многообещающим выглядит разделение наблюдения и управления, использованное в предыдущем разделе для получения детерминированной задачи управления с ужесточёнными условиями. Продемонстрируем, как элегантно реализуется принцип разделения в поведенческой манере.
+\begin{lemma}\label{dd-separation}
+Пусть $\{u_{\tau}^p, y_{\tau}^p \}$--некоторая траектория системы \ref{model} длины $\tau \geq n$. Тогда любая траектория $\{u_{\tau}^p, u, y_{\tau}^p, y\}$ длины $T$ системы \ref{model} однозначно представима в виде суммы траекторий $\{0, u, 0, y_0\}$ и $\{u_{\tau}^p, 0, y_{\tau}^p, \hat{y}\}$ длины $T$, причём определить неизвестные участки $y_0, \hat{y}$ можно следующим образом:
+Шаг 1. Найти некоторое решение алгебраичеких уравнений
+\begin{equation}
+\begin{pmatrix}                     
+U_\tau^p \\                         
+Y_\tau^p \\
+U_\tau^f \\
+\end{pmatrix} \hat{\alpha} = \begin{pmatrix}
+u_\tau^p \\
+y_\tau^p \\
+0 \\
+\end{pmatrix}, \quad
+\begin{pmatrix}
+U_\tau^p \\
+Y_\tau^p \\
+U_\tau^f \\
+\end{pmatrix} \alpha_0 = \begin{pmatrix}
+0 \\
+0 \\
+u \\
+\end{pmatrix}
+\end{equation}
+Шаг 2. Вычислить $\hat{y} = Y_\tau^f\hat{\alpha}, $ $y_0 = Y_\tau^f\alpha_0$
+\end{lemma}
+
+\begin{proof}
+Согласно , все возможные $\hat{y}, y_0$ описываются как
+\begin{equation}
+\begin{pmatrix}
+U_\tau^p \\
+Y_\tau^p \\
+U_\tau^f \\
+Y_\tau^f \\
+\end{pmatrix} \alpha_0 = \begin{pmatrix}
+0 \\
+0 \\
+u \\
+y_0 \\
+\end{pmatrix}, \quad
+\begin{pmatrix}
+U_\tau^p \\
+Y_\tau^p \\
+U_\tau^f \\
+Y_\tau^f \\
+\end{pmatrix} \hat{\alpha} = \begin{pmatrix}
+u_\tau^p \\
+y_\tau^p \\
+0 \\
+\hat{y}\\
+\end{pmatrix},
+\end{equation}
+потому каждый возможный $\hat{y}, y_0$ действительно может быть получен как результат Шагов 1-2 с соответствующими $\hat{\alpha}, \alpha_0$. С другой стороны, поскольку длина $\tau$ исходной траектории не меньше размерности системы $n$, то однозначно определено состояние $x(\tau)$ в момент $\tau$, а значит, однозначно определены выходы системы $\hat{y}, y_0$ для входных сигналов $0, u$ соответственно.
+\end{proof}
+
+Ограничение на выходные сигналы принимает вид
+$G_{\tau}(y_0+\hat{y}) \leq g_{\tau}$. Наложим на $y_0$ более жёсткое условие: $G_{\tau}y_0 \leq g_{\tau}-\chi(\tau)$, где $\chi_i(\tau)$ соответствует наихудшей реализации состояния системы в момент $\tau$, а именно является решением задачи \ref{estimation} линейного программирования.
+\begin{equation} \label{estimation}
+\chi_i(\tau) = \max\limits_{\hat{\alpha}, \xi_{\tau}} G_{\tau i}\hat{y}
+\end{equation}
+$$\begin{pmatrix}
+U_\tau^p \\
+Y_\tau^p \\
+U_\tau^f \\
+Y_\tau^f \\
+\end{pmatrix} \hat{\alpha} = \begin{pmatrix}
+u_\tau^p \\
+\tilde{y}_\tau^p + \xi_{\tau}\\
+0 \\
+\hat{y}\\
+\end{pmatrix}
+$$
+$$-\varepsilon \mathbbm{1} \leq \xi_{\tau} \leq \varepsilon \mathbbm{1}$$
+Что, в более компактной формулировке, являет собой задачу
+\begin{equation} \label{estimation-lp}
+\chi_i(\tau) = \max\limits_{\hat{\alpha}} G_{\tau i}Y_{\tau}^f\hat{\alpha}
+\end{equation}
+$$\begin{pmatrix}
+U_\tau^p \\
+U_\tau^f \\
+\end{pmatrix} \hat{\alpha} = \begin{pmatrix}
+u_\tau^p \\
+0 \\
+\end{pmatrix}
+$$
+$$
+\tilde{y}_{\tau}-\varepsilon \mathbbm{1} \leq 
+Y_\tau^p \hat{\alpha} \leq 
+\tilde{y}_\tau + \varepsilon \mathbbm{1}
+$$
+Удовлетворение $y_0$ ужесточённому ограничению автоматически влечёт удовлетворение исходного ограничения для любой возможной реализации $\hat{y}$.
+\bigskip
+
+\begin{definition}
+\textit{Уровнем ошибки} в задаче \ref{estimation-lp} будем называть $\varepsilon$, а \textit{номинальной задачей наблюдения при уровне ошибки} $\varepsilon$ будем называть задачу \ref{estimation-lp} для истинной траектории, т.е. для случая $\tilde{y}_\tau = y_\tau.$
+\end{definition}
+Очевидно, если задача \ref{estimation-lp} разрешима при любой покомпонентно ограниченной $\varepsilon$ ошибке, то должна быть разрешима номинальная задача. Ещё один результат, касающийся вопроса гарантированной разрешимости приведём ниже.
+\begin{lemma}
+Если номинальная задача наблюдения при уровне ошибки $\varepsilon$ разрешима, то для любого неточного выходного сигнала $\tilde{y}_\tau = y_\tau + \xi_\tau$, где ошибка ограничена поэлементно $\norm{\xi_\tau}_\infty \leq \frac{\varepsilon}{2}$ соответствующая задача\ref{estimation-lp} также имеет решение.
+\end{lemma}
+\begin{proof}
+Для любого $\tilde{y}_\tau = y_\tau + \xi_\tau$ с ограниченной ошибкой $\norm{\xi_\tau}_\infty \leq \frac{\varepsilon}{2}$ задача \ref{estimation-lp} имеет те же самые целевую функцию и условия в виде равенств, а вот неравенства стали не менее сильными: 
+$$y_\tau - \varepsilon \mathbbm{1} \leq \tilde{y}_\tau - \frac{\varepsilon}{2}\mathbbm{1} \leq Y_\tau^p\hat{\alpha} \leq \tilde{y}_\tau + \frac{\varepsilon}{2}\mathbbm{1} \leq y_\tau + \varepsilon \mathbbm{1}.$$
+\end{proof}
+
+
+Задача с ужесточёнными условиями на $y_0$ принимает следующий вид
+
+\begin{equation}\label{control}
+\min\limits_{\alpha_0}u^Tu
+\end{equation} 
+$$\begin{pmatrix}
+U_\tau^p \\
+Y_\tau^p \\
+U_\tau^f \\
+Y_\tau^f \\
+\end{pmatrix} \alpha_0 = \begin{pmatrix}
+0 \\
+0 \\
+u \\
+y_0 \\
+\end{pmatrix}$$
+$$G_{\tau}y_0 \leq g_{\tau} - \chi(\tau)$$
+
+
+Снова переходим к эквивалентному, но более компактному виду, получаем
+\begin{equation}\label{control-qp}
+\min\limits_{\alpha_0}\alpha_0^T{U_{\tau}^f}^TU_{\tau}^f\alpha_0
+\end{equation} 
+$$
+\begin{pmatrix}
+U_\tau^p \\
+Y_\tau^p \\
+\end{pmatrix} \alpha_0 = \begin{pmatrix}
+0 \\
+0 \\
+\end{pmatrix}
+$$
+$$G_{\tau}Y_{\tau}^f\alpha_0 \leq g_{\tau} - \chi(\tau)$$
+
+Таким образом, задача свелась к нескольким задачам линейного программирования и одной выпуклой задаче квадратичного программирования.
+
+\section{Недетерминированный случай: априорные измерения неточны}
+
+$\tilde{y}^d = (y^d(0) + \xi^d(0), y^d(1) + \xi^d(1), \cdots, y^d(T^d-1) + \xi^d(t^d - 1))$
+
+$\tilde{y}^d = y^d + \xi^d$
+
+Тогда $\tilde{Y}_{\tau}^p = Y_{\tau}^p + \mathit{\Xi}_{\tau}^p$,
+$\tilde{Y}_{\tau}^f = Y_{\tau}^f + \mathit{\Xi}_{\tau}^f$, где 
+$$
+\begin{pmatrix}
+		\mathit{\Xi}_{\tau}^p\\
+		\mathit{\Xi}_{\tau}^f
+		\end{pmatrix}  = \begin{pmatrix}
+  \xi(0) & \cdots & \xi(T^d-T)\\
+  \vdots & \ddots & \vdots \\
+  \xi(\tau-1) & \cdots & \xi(\tau - 1 + T^d-T) \\
+  \hline
+  \xi(\tau) & \cdots & y(\tau + T^d-T)\\
+  \vdots & \ddots & \vdots \\
+  \xi(T-1) & \cdots & y(T^d-1)
+\end{pmatrix} 
+    = H_T(\xi^d) 
+$$
+
+В соответствии с этим наша задача оптимальной оценки \ref{estimation} перепишется как
+\begin{equation} \label{estimation-noisy}
+\chi_i(\tau) = \max\limits_{\hat{\alpha}, \xi_{\tau}, \xi^d} G_{\tau i}\hat{y}
+\end{equation}
+$$\begin{pmatrix}
+U_\tau^p \\
+Y_\tau^p + \mathit{\Xi}_\tau^p\\
+U_\tau^f \\
+Y_\tau^f + \mathit{\Xi}_\tau^f \\
+\end{pmatrix} \hat{\alpha} = \begin{pmatrix}
+u_\tau^p \\
+y_\tau + \xi_{\tau}\\
+0 \\
+\hat{y}\\
+\end{pmatrix}
+$$
+$$-\varepsilon \mathbbm{1} \leq \xi_{\tau} \leq \varepsilon \mathbbm{1}$$
+$$-\varepsilon \mathbbm{1} \leq \xi^d \leq \varepsilon \mathbbm{1}$$
+
+Эта задача являет собой следующую относительно переменной $\kappa = (\hat{\alpha}, \xi^d)$
+
+\begin{equation} \label{quad-obj-quad-constr}
+\chi_i(\tau) = \max\limits_{\kappa} G_{\tau i}\hat{y}
+\end{equation}
+
+$$\begin{pmatrix}
+U_\tau^p \\
+\overline{Y}_\tau^p + \mathit{\Xi}_\tau^p\\
+U_\tau^f \\
+\overline{Y}_\tau^f + \mathit{\Xi}_\tau^f \\
+\end{pmatrix} \hat{\alpha} = \begin{pmatrix}
+u_\tau^p \\
+y_\tau + \xi_{\tau}\\
+0 \\
+\hat{y}\\
+\end{pmatrix}
+$$
+$$-\varepsilon \mathbbm{1} \leq \xi_{\tau} \leq \varepsilon \mathbbm{1}$$
+$$-\varepsilon \mathbbm{1} \leq \xi^d \leq \varepsilon \mathbbm{1}$$
