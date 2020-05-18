@@ -1,0 +1,10 @@
+\nomenclatureentry{01$[x, y] = \begin{pmatrix} x(0) & y(0) \\ x(1) & y(1) \\ \vdots & \vdots \\ x(n-1) & y(n-1) \\ \end{pmatrix}$@[{$[x, y] = \begin{pmatrix} x(0) & y(0) \\ x(1) & y(1) \\ \vdots & \vdots \\ x(n-1) & y(n-1) \\ \end{pmatrix}$}]\begingroup матрица, составленная из "горизонтально склеенных"\ векторов $x, y$ одинаковой размерности $n$\nomeqref {1.0}|nompageref}{6}
+\nomenclatureentry{02$(x, y) = [x^T, y^T]^T$@[{$(x, y) = [x^T, y^T]^T$}]\begingroup вектор, составленный из "вертикально склеенных"\ векторов $x, y$\nomeqref {1.0}|nompageref}{6}
+\nomenclatureentry{03$\mathbb{Z}_{\geq 0}$@[{$\mathbb{Z}_{\geq 0}$}]\begingroup множество целых неотрицательных чисел\nomeqref {1.0}|nompageref}{6}
+\nomenclatureentry{04$\mathbb{W}^{\mathbb{Z}_{\geq 0}} = \{ f \colon \mathbb{Z}_{\geq 0} \to \mathbb{W} \}$@[{$\mathbb{W}^{\mathbb{Z}_{\geq 0}} = \{ f \colon \mathbb{Z}_{\geq 0} \to \mathbb{W} \}$}]\begingroup пространство $\mathbb{W}$ в декартовой степени $\mathbb{Z}_{\geq 0}$\nomeqref {1.0}|nompageref}{6}
+\nomenclatureentry{05$u_t = (u(0), u(1) \ldots, u(t))$@[{$u_t = (u(0), u(1) \ldots, u(t))$}]\begingroup вектор, составленный из сигналов в моменты времени $0, 1, \ldots, t$\nomeqref {1.0}|nompageref}{6}
+\nomenclatureentry{06$\{u(t), y(t)\}_{t = 0}^T = \{u_T, y_T\}$@[{$\{u(t), y(t)\}_{t = 0}^T = \{u_T, y_T\}$}]\begingroup пара из входного сигнала $u_T$  и соответствующего ему выходного сигнала $y_T$\nomeqref {1.0}|nompageref}{6}
+\nomenclatureentry{07$colspan(A)$@[{$colspan(A)$}]\begingroup линейная оболочка столбцов матрицы $A$\nomeqref {1.0}|nompageref}{6}
+\nomenclatureentry{08$\norm{x}$@[{$\norm{x}$}]\begingroup Евклидова норма вектора $x$\nomeqref {1.0}|nompageref}{6}
+\nomenclatureentry{09$\norm{x}_\infty$@[{$\norm{x}_\infty$}]\begingroup $l_\infty$--норма вектора $x$\nomeqref {1.0}|nompageref}{6}
+\nomenclatureentry{10$\mathbbm{1}$@[{$\mathbbm{1}$}]\begingroup единичный вектор, размерность которого следует из контекста\nomeqref {1.0}|nompageref}{6}

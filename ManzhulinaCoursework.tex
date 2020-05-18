@@ -10,6 +10,13 @@
 \newcommand{\norm}[1]{\left\lVert#1\right\rVert}
 \usepackage{listings}
 \usepackage{verbatim}
+%nomenclature
+\usepackage{nomencl}
+\def\nompreamble{\addcontentsline{toc}{chapter}{\nomname}\markboth{\nomname}{\nomname}}
+\usepackage[labelsep=period]{caption}
+\newcommand*{\QEDB}{\null\nobreak\hfill\ensuremath{\square}}%
+
+
 
 \begin{document}
 
@@ -58,6 +65,11 @@
 
 \input{intro}
 
+\renewcommand{\nomname}{ÏÅĞÅ×ÅÍÜ ÓÑËÎÂÍÛÕ ÎÁÎÇÍÀ×ÅÍÈÉ} % Èçìåíåíèå çàãîëîâêà ïåğå÷íÿ
+\makenomenclature 
+\printnomenclature[5em] 
+
+
 \input{chapter1}
 
 \input{chapter2}
@@ -76,7 +88,7 @@
 % ************************************************************************
 %   ÑÏÈÑÎÊ ÈÑÏÎËÜÇÎÂÀÍÍÎÉ ËÈÒÅĞÀÒÓĞÛ
 % ************************************************************************
-%TODO complete it with all my sources
+
 \input{bibliography}
 
 \label{lastpage}
