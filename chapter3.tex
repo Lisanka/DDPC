@@ -10,7 +10,7 @@
 
 Как и ранее,  траектории "прошлого"\ ${\{(u^p(0), u^p(1), \ldots, u^p(\tau-1)), (y^p(0), y^p(1), \ldots, y^p(\tau-1))\} = \{u_\tau^p, y_\tau^p \}}$, известные к текущему моменту $\tau$ в процессе управления системой, будем считать измеренными с точностью до ограниченной ошибки: т.е. доступны лишь $\{u_\tau^p, \tilde{y}_\tau^p\}$, где ${\tilde{y}^p_\tau = y^p_\tau + \xi_\tau}$.
 
-В текущий момент времени $\tau$, подобно предыдущей главе, ставится задача минимизации квадратичного критерия качества
+В текущий момент времени $\tau$, подобно предыдущей главе, ставится задача минимизация квадратичного критерия качества
 $$
     \sum_{t = \tau}^{T-1} \norm{u(t)}^2,
     $$
@@ -101,25 +101,25 @@ u
 
 Таким образом, в каждый момент времени $n \leq \tau \leq T$ решаем следующую задачу оптимального программного управления, обладая неточной траекторией $\{u_\tau^p, \tilde{y}_\tau^p\}$:
 \begin{equation}\label{dd-oc-at-tau}
-\min\limits_{u} u^Tu,
+\min\limits_{u(\tau)} u(\tau)^Tu(\tau),
 \end{equation}
 $$
 \begin{pmatrix}
 U_\tau^p \\
 Y_\tau^p \\
 U_\tau^f \\
-\end{pmatrix} \alpha = \begin{pmatrix}
+\end{pmatrix} \alpha(\tau) = \begin{pmatrix}
 u_\tau^p \\
 y_\tau^p \\
-u \\
+u(\tau) \\
 \end{pmatrix},
 $$
 $$
 \tilde{y}_\tau^p = y_\tau^p + \xi_\tau, \quad -\varepsilon\mathbbm{1} \leq \xi_\tau \leq \varepsilon \mathbbm{1},
 $$
-$$u_{\min}(\tau) \leq u \leq u_{\max}(\tau),$$
+$$u_{\min}(\tau) \leq u(\tau) \leq u_{\max}(\tau),$$
 $$
-G_\tau Y_\tau^f \alpha \leq g_\tau \quad \forall \alpha, \xi_\tau,
+G_\tau Y_\tau^f \alpha(\tau) \leq g_\tau \quad \forall \alpha(\tau), \xi_\tau,
 $$
 где матрица
 \[
@@ -188,35 +188,35 @@ u \\
 \end{proof}
 
 В связи с вышеизложенным, ограничение на выходные сигналы принимает вид
-$G_{\tau}(y_0+\hat{y}) \leq g_{\tau}$. Наложим на $y_0$ суженное условие:
+$G_{\tau}(y_0(\tau)+\hat{y}(\tau)) \leq g_{\tau}$. Наложим на $y_0(\tau)$ суженное условие:
 \begin{equation}\label{tightened constraint}
-G_{\tau}y_0 \leq g_{\tau}-\chi(\tau),
+G_{\tau}y_0(\tau) \leq g_{\tau}-\chi(\tau),
 \end{equation}
 где каждая компонента $\chi_i(\tau)$ соответствует наихудшей реализации состояния системы в момент $\tau$, а именно является решением задачи линейного программирования
 \begin{equation} \label{estimation}
-\chi_i(\tau) = \max\limits_{\hat{\alpha}, \xi_{\tau}, \hat{y}} G_{\tau i}\hat{y},
+\chi_i(\tau) = \max\limits_{\hat{\alpha}(\tau), \xi_{\tau}, \hat{y}(\tau)} G_{\tau i}\hat{y}(\tau),
 \end{equation}
 $$\begin{pmatrix}
 U_\tau^p \\
 Y_\tau^p \\
 U_\tau^f \\
 Y_\tau^f \\
-\end{pmatrix} \hat{\alpha} = \begin{pmatrix}
+\end{pmatrix} \hat{\alpha}(\tau) = \begin{pmatrix}
 u_\tau^p \\
 \tilde{y}_\tau^p + \xi_{\tau}\\
 0 \\
-\hat{y}\\
+\hat{y}(\tau)\\
 \end{pmatrix},
 $$
 $$-\varepsilon \mathbbm{1} \leq \xi_{\tau} \leq \varepsilon \mathbbm{1}.$$
 Задача (\ref{estimation}) в компактной формулировке (исключается $\xi_{\tau}$) имеет вид
 \begin{equation} \label{estimation-lp}
-\chi_i(\tau) = \max\limits_{\hat{\alpha}} G_{\tau i}Y_{\tau}^f\hat{\alpha},
+\chi_i(\tau) = \max\limits_{\hat{\alpha}(\tau)} G_{\tau i}Y_{\tau}^f\hat{\alpha}(\tau),
 \end{equation}
 $$\begin{pmatrix}
 U_\tau^p \\
 U_\tau^f \\
-\end{pmatrix} \hat{\alpha} = \begin{pmatrix}
+\end{pmatrix} \hat{\alpha}(\tau) = \begin{pmatrix}
 u_\tau^p \\
 0 \\
 \end{pmatrix},
@@ -252,89 +252,308 @@ $$
 Детерминированная задача оптимального программного управления с суженными условиями на $y_0$ принимает следующий вид:
 
 \begin{equation}\label{control}
-\min\limits_{\alpha_0, u, y_0}u^Tu,
+\min\limits_{\alpha_0(\tau), u(\tau), y_0(\tau)}u(\tau)^Tu(\tau),
 \end{equation}
 $$\begin{pmatrix}
 U_\tau^p \\
 Y_\tau^p \\
 U_\tau^f \\
 Y_\tau^f \\
-\end{pmatrix} \alpha_0 = \begin{pmatrix}
+\end{pmatrix} \alpha_0(\tau) = \begin{pmatrix}
 0 \\
 0 \\
 u \\
-y_0 \\
+y_0(\tau) \\
 \end{pmatrix},$$
-$$G_{\tau}y_0 \leq g_{\tau} - \chi(\tau),$$
-$$u_{\min}(\tau) \leq u \leq u_{\max}(\tau).$$
+$$G_{\tau}y_0(\tau) \leq g_{\tau} - \chi(\tau),$$
+$$u_{\min}(\tau) \leq u(\tau) \leq u_{\max}(\tau).$$
 
 Снова переходим к эквивалентному, но более компактному виду, получаем
 \begin{equation}\label{control-qp}
-\min\limits_{\alpha_0}\alpha_0^T{U_{\tau}^f}^TU_{\tau}^f\alpha_0,
+\min\limits_{\alpha_0(\tau)}\alpha_0(\tau)^T{U_{\tau}^f}^TU_{\tau}^f\alpha_0(\tau),
 \end{equation}
 $$
 \begin{pmatrix}
 U_\tau^p \\
 Y_\tau^p \\
-\end{pmatrix} \alpha_0 = \begin{pmatrix}
+\end{pmatrix} \alpha_0(\tau) = \begin{pmatrix}
 0 \\
 0 \\
 \end{pmatrix},
 $$
-$$G_{\tau}Y_{\tau}^f\alpha_0 \leq g_{\tau} - \chi(\tau),$$
-$$u_{\min}(\tau) \leq U_{\tau}^f\alpha_0 \leq u_{\max}(\tau).$$
+$$G_{\tau}Y_{\tau}^f\alpha_0(\tau) \leq g_{\tau} - \chi(\tau),$$
+$$u_{\min}(\tau) \leq U_{\tau}^f\alpha_0(\tau) \leq u_{\max}(\tau).$$
 Получив решение $\alpha_0^*(\tau, u_\tau^p, \tilde{y}_\tau^p)$ задачи  (\ref{control-qp}), вычисляем оптимальное управление ${u^*(\tau, u_\tau^p, \tilde{y}_\tau^p) = U_\tau^f \alpha_0^*(\tau, u_\tau^p, \tilde{y}_\tau^p)}$. Из вычисленного ${u^*(\tau, u_\tau^p, \tilde{y}_\tau^p) = (u^*(\tau|\tau, u_\tau^p, \tilde{y}_\tau^p), \ldots, u^*(T-1|\tau, u_\tau^p, \tilde{y}_\tau^p))}$ подаем на вход системе ${u^p(\tau) = u^*(\tau|\tau, u_\tau^p, \tilde{y}_\tau^p).}$
 
 \bigskip
 Таким образом, задача оптимального управления, решаемая в каждой временной точке $n \leq \tau \leq T-1$, свелась к нескольким задачам линейного программирования и одной выпуклой задаче квадратичного программирования.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Рекуррентная разрешимость}
+В данном разделе будут предоставлено теоретическое обоснование реализуемости предложенной схемы. В частности, следующая теорема доказывает рекуррентную разрешимость задач  (\ref{estimation}) и (\ref{control}), решаемых в каждый момент времени $\tau = n, \ldots, T-1$.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Недетерминированный случай: априорные измерения неточны}
-В этом разделе будет кратко приведена идея развития результатов.
-Интерес представляет случай, когда и априорные измерения содержат некоторую ошибку, т.е. $\tilde{y}^d = y^d + \xi^d.$
+В данном разделе используем обозначения предыдущего, лишь будем опускать для краткости траекторию $\{u^p_\tau, \tilde y^p_\tau\}$ --- одну и ту же во всех обозначениях для момента $\tau$, --- как то
+$\alpha_0(\tau) = \alpha_0(\tau, u^p_\tau, \tilde y^p_\tau)$,
+${u^*(t|\tau) = u^*(t|\tau, u^p_\tau, \tilde y^p_\tau)}$ и все прочие. 
+То же касаемо момента ${\tau+1}$ и траектории $\{u^p_\tau, u^*(\tau|\tau), \tilde y^p_\tau, \tilde y^p(\tau)\}$, которая реализуется при подаче управления $u^*(\tau|\tau)$ в момент $\tau$.
+Как и ранее, символом $^*$ помечены оптимальные решения. 
 
-Тогда $\tilde{Y}_{\tau}^p = Y_{\tau}^p + \mathit{\Xi}_{\tau}^p$,
-$\tilde{Y}_{\tau}^f = Y_{\tau}^f + \mathit{\Xi}_{\tau}^f$, где
-$$
+\begin{theorem}
+Пусть в момент $\tau$ для неточной траектории $\{u^p_\tau, \tilde y^p_\tau\}$ разрешима каждая из задач (\ref{estimation}). Далее, пусть разрешима соответствующая задача (\ref{control}) с параметром $\chi(\tau)$, поставленным решениями задач (\ref{estimation}). Тогда в момент $\tau+1$ для траектории $\{u^p_\tau, u^*(\tau|\tau), \tilde y^p_\tau, \tilde y^p(\tau)\}$ эти задачи также разрешимы. Более того, $$\sum\limits_{t=\tau+1}^{T-1}\norm{u^*(t|\tau+1, u^p_{\tau+1}, \tilde y^p_{\tau+1})}^2 \leq \sum\limits_{t=\tau+1}^{T-1}\norm{u^*(t|\tau, u^p_\tau, \tilde y^p_\tau)}^2$$
+\end{theorem}
+
+\begin{proof}
+На протяжении всего доказательства будут фигурировать четыре задачи: оптимального наблюдения (\ref{estimation-lp-tau}) и управления (\ref{control-qp-tau}) в момент $\tau$, оптимального наблюдения (\ref{estimation-lp-tau+1}) и управления (\ref{control-qp-tau+1}) в момент $\tau+1$. Докажем, что из разрешимости (\ref{estimation-lp-tau}),(\ref{control-qp-tau}) следует разрешимость (\ref{estimation-lp-tau+1}),(\ref{control-qp-tau+1}). 
+\begin{multicols}{2}
+\noindent
+\begin{gather} 
+\chi_i(\tau+1) = \max\limits_{\hat{\alpha}(\tau+1)} G_{(\tau+1) i}Y_{\tau+1}^f\hat{\alpha}(\tau+1), \label{estimation-lp-tau+1}\\
 \begin{pmatrix}
-		\mathit{\Xi}_{\tau}^p\\
-		\mathit{\Xi}_{\tau}^f
-		\end{pmatrix}  = \begin{pmatrix}
-  \xi(0) & \cdots & \xi(T^d-T)\\
-  \vdots & \ddots & \vdots \\
-  \xi(\tau-1) & \cdots & \xi(\tau - 1 + T^d-T) \\
-  \hline
-  \xi(\tau) & \cdots & \xi(\tau + T^d-T)\\
-  \vdots & \ddots & \vdots \\
-  \xi(T-1) & \cdots & \xi(T^d-1)
-\end{pmatrix}
-    = H_T(\xi^d).
-$$
-
-В соответствии с этим задача оптимального оценивания (\ref{estimation}) перепишется следующим образом:
-
-\begin{equation} \label{estimation-noisy}
-\chi_i(\tau) = \max\limits_{\hat{\alpha}, \xi_{\tau}, \xi^d} G_{\tau i}\hat{y},
-\end{equation}
-$$\begin{pmatrix}
-U_\tau^p \\
-Y_\tau^p + \mathit{\Xi}_\tau^p\\
-U_\tau^f \\
-Y_\tau^f + \mathit{\Xi}_\tau^f \\
-\end{pmatrix} \hat{\alpha} = \begin{pmatrix}
-u_\tau^p \\
-\tilde{y}_\tau^p + \xi_{\tau}\\
+U_{\tau}^p \\
+u(\tau)\\
+U_{\tau+1}^f \\
+\end{pmatrix} \hat{\alpha}(\tau+1) = \begin{pmatrix}
+u_{\tau}^p \\
+u^*(\tau|\tau)\\
 0 \\
-\hat{y}\\
-\end{pmatrix},
-$$
-$$-\varepsilon \mathbbm{1} \leq \xi_{\tau} \leq \varepsilon \mathbbm{1},$$
-$$-\varepsilon \mathbbm{1} \leq \xi^d \leq \varepsilon \mathbbm{1}.$$
-
-Задача (\ref{estimation-noisy}) представяет собой задачу с квадратичной целевой функцией и квадратичными ограничениями относительно переменной $(\hat{\alpha}, \xi^d)$. Сложность заключается в том, данная задача является невыпуклой. В дальнейшем было бы интересно исследовать эффективные способы решения этой невыпуклой задачи оптимального оценивания. Впоследствии можно использовать этот результат для решения соответствующей задачи оптимального управления в условии неточной априорной траектории.
-
+\end{pmatrix}, \nonumber \\
+\tilde{y}_{\tau}^p-\varepsilon \mathbbm{1} \leq
+Y_{\tau}^p \hat\alpha(\tau+1) \leq
+\tilde{y}_{\tau}^p + \varepsilon \mathbbm{1}, \nonumber \\
+\tilde y^p(\tau) - \varepsilon \mathbbm{1} \leq 
+y(\tau) \hat \alpha(\tau+1) \leq
+\tilde y^p(\tau) + \varepsilon \mathbbm{1}. \nonumber 
+\end{gather}
+\columnbreak
+\begin{gather}
+\chi_i(\tau) = \max\limits_{\hat{\alpha}(\tau)} G_{\tau i}Y_{\tau}^f\hat{\alpha}(\tau), \label{estimation-lp-tau} \\
+\begin{pmatrix}
+U_{\tau}^p \\
+u(\tau)\\
+U_{\tau+1}^f \\
+\end{pmatrix} \hat{\alpha}(\tau) = \begin{pmatrix}
+u_{\tau}^p \\
+0\\
+0 \\
+\end{pmatrix}, \nonumber \\
+\tilde{y}_{\tau}^p-\varepsilon \mathbbm{1} \leq
+Y_{\tau}^p \hat\alpha(\tau) \leq
+\tilde{y}_\tau^p + \varepsilon \mathbbm{1}.\nonumber 
+\end{gather}
+\end{multicols}
 \newpage
+
+\begin{multicols}{2}
+\noindent
+\begin{gather}
+\min\limits_{\alpha_0(\tau+1)}\alpha_0(\tau+1)^T{U_{\tau+1}^f}^TU_{\tau+1}^f\alpha_0(\tau+1), \label{control-qp-tau+1}\\
+\begin{pmatrix}
+U_{\tau}^p \\
+u(\tau)\\
+Y_{\tau}^p \\
+y(\tau) \\
+\end{pmatrix} \alpha_0(\tau+1) = \begin{pmatrix}
+0 \\
+0\\
+0\\
+0 \\
+\end{pmatrix}, \nonumber \\
+G_{\tau+1}Y_{\tau+1}^f\alpha_0(\tau+1) \leq g_{\tau+1} - \chi(\tau+1), \nonumber \\
+u_{\min}(\tau+1) \leq U_{\tau+1}^f\alpha_0(\tau+1) \leq u_{\max}(\tau+1). \nonumber 
+\end{gather}
+\columnbreak
+\begin{gather}
+\min\limits_{\alpha_0(\tau)}\alpha_0(\tau)^T{U_{\tau}^f}^TU_{\tau}^f\alpha_0(\tau), \label{control-qp-tau}\\
+\begin{pmatrix}
+U_{\tau}^p \\
+Y_{\tau}^p \\
+\end{pmatrix} \alpha_0(\tau) = \begin{pmatrix}
+0\\
+0 \\
+\end{pmatrix}, \nonumber \\
+G_{\tau}Y_{\tau}^f\alpha_0(\tau) \leq g_{\tau} - \chi(\tau), \nonumber \\
+u_{\min}(\tau) \leq U_{\tau}^f\alpha_0(\tau) \leq u_{\max}(\tau). \nonumber 
+\end{gather}
+\end{multicols}
+
+Здесь и далее $u(\tau)=(u^d(\tau), u^d(\tau+1), \ldots, u^d(\tau+T^d-T)),$
+${y(\tau)=(y^d(\tau), y^d(\tau+1), \ldots, y^d(\tau+T^d-T)).}$
+ 
+Прежде всего, необходимо доказать разрешимость каждой из задач оптимального наблюдения (\ref{estimation-lp-tau+1}) в момент $\tau+1$. Однако, уже на этом этапе придется задействовать задачу (\ref{control-qp-tau}) оптимального управления в момент $\tau$. Во-первых, будем использовать само решение $\alpha_0^*(\tau)$ этой задачи, которое удовлетворяет
+
+\begin{gather}
+\begin{pmatrix}
+U_{\tau}^p \\
+u(\tau)\\
+Y_{\tau}^p \\
+y(\tau)\\
+\end{pmatrix} \alpha_0^*(\tau) = \begin{pmatrix}
+0\\
+u^*(\tau|\tau)\\
+0\\
+y_0^*(\tau|\tau)\\
+\end{pmatrix}, \label{alpha_0-tau} \\
+G_{\tau+1}Y_{\tau+1}^f \alpha_0^*(\tau) \leq g_{\tau+1}-\chi(\tau+1). \label{alpha_0-tau-y} 
+\end{gather}
+
+Во-вторых, понадобится оптимальное управление $U^f_\tau\alpha_0^*(\tau) = u^*(\tau)$, а точее, его хвост $u_0^c(\tau+1)=(u^*(\tau+1|\tau)^T, \ldots, u^*(T-1|\tau)^T)^T$. Для $u_0^c(\tau+1)$ сконструируем некоторое $\alpha_0^c(\tau+1)$, удовлетворяющее следующему равенству:
+
+\begin{equation}\label{alpha_0-candidate}
+\begin{pmatrix}
+U_{\tau}^p \\
+u(\tau)\\
+Y_{\tau}^p \\
+y(\tau)\\
+U_{\tau+1}^f \\
+\end{pmatrix} \alpha_0^c(\tau+1) = \begin{pmatrix}
+0\\
+0\\
+0\\
+0\\
+u_0^c(\tau+1)\\
+\end{pmatrix}.
+\end{equation}
+
+Согласно Лемме \ref{dd-separation}, решение $\alpha_0^c(\tau+1)$ для (\ref{alpha_0-candidate}) существует для всех возможных $u_0^c(\tau+1)$. 
+%и этому $\alpha_0^c(\tau+1)$ соответствует $y^c_0(\tau+1)$ ---  выходная траектория, если система движется из состояния $x(\tau+1)=0$ под воздействием хвоста $u_0^c$ оптимального управления предыдущего шага схемы.
+
+Теперь, располагая $\alpha_0^c(\tau+1)$ и $\alpha_0^*(\tau)$, докажем разрешимость задач оптимального наблюдения. Сдвинем переменную ${\hat \alpha(\tau+1)}$, относительно которой поставлены задачи оптимального наблюдения, на константу, перейдем к новой переменной $\Delta\alpha(\tau+1)$:
+$$\hat \alpha(\tau+1) = \alpha_0^*(\tau)-\alpha_0^c(\tau+1)+\Delta\alpha(\tau+1).$$
+
+С учетом того, что для $\alpha_0^*(\tau)$ выполняется (\ref{alpha_0-tau}), а $\alpha_0^c(\tau+1)$ удовлетворяет (\ref{alpha_0-candidate}), из задач для определения $\chi(\tau+1)$, поставленных для $\hat \alpha(\tau+1)$, получаем следующие эквивалентные задачи относительно переменной $\Delta\alpha(\tau+1)$: 
+\begin{equation} \label{estimation-delta-alpha}
+\chi_i(\tau+1) = G_{(\tau+1)i}Y_{\tau+1}^f(\alpha_0^*(\tau)-\alpha_0^c(\tau+1)) +\max\limits_{\Delta\alpha(\tau+1)} G_{(\tau+1) i}Y_{\tau+1}^f\Delta\alpha(\tau+1),
+\end{equation}
+
+\begin{equation}\label{u-delta-alpha}
+\begin{pmatrix}
+U_\tau^p \\
+u(\tau)\\
+U_\tau^f \\
+\end{pmatrix} \Delta\alpha(t+1) = \begin{pmatrix}
+u_\tau^p \\
+0 \\
+0\\
+\end{pmatrix},
+\end{equation}
+
+\begin{equation}\label{y-delta-alpha}
+\tilde{y}_{\tau}^p-\varepsilon \mathbbm{1}  \leq
+Y_\tau^p \Delta \alpha(t+1)
+\leq \tilde{y}_\tau^p + \varepsilon \mathbbm{1},
+\end{equation}
+
+\begin{equation}\label{estimation-new-constraint}
+\tilde y^p(\tau)-y_0^*(\tau|\tau) - \varepsilon \mathbbm{1} \leq y(\tau) \Delta \alpha(t+1)
+\leq \tilde y^p(\tau)-y_0^*(\tau|\tau) +  \varepsilon \mathbbm{1}.
+\end{equation}
+
+Сравним задачи (\ref{estimation-delta-alpha}) для $\Delta \alpha(\tau + 1)$ и (\ref{estimation-lp-tau}) для $\hat \alpha (\tau)$: на $\Delta \alpha(\tau+1)$ наложено дополнительное ограничение (\ref{estimation-new-constraint}), а целевые функции разнятся на константу. 
+
+Множество допустимых решений $\Delta \alpha(\tau+1)$ непустое. Его элементом является $\hat\alpha^p(\tau+1)$, соответствующий истинной траектории $\{u^p_\tau, 0, y^p_\tau, \hat y^p(\tau|\tau)\}$ согласно Лемме \ref{dd-separation}:
+\begin{equation}\label{alpha_true}
+\begin{pmatrix}
+U_{\tau}^p \\
+u(\tau)\\
+Y_{\tau}^p \\
+y(\tau)\\
+U_{\tau+1}^f \\
+\end{pmatrix} \hat\alpha^p(\tau+1) = \begin{pmatrix}
+u^p_\tau\\
+0\\
+y^p_\tau\\
+\hat y^p(\tau|\tau)\\
+0\\
+\end{pmatrix}.
+\end{equation}
+
+Действительно, для $\hat\alpha^p(\tau+1)$ ограничения (\ref{u-delta-alpha}), (\ref{y-delta-alpha}) очевидно удовлетворены, а (\ref{estimation-new-constraint}) выполняется ввиду того, что по принципу разделимости $\hat y^p(\tau|\tau)=y^p(\tau)-  y_0^*(\tau|\tau)$.
+
+Поскольку множество допустимых решений $\hat \alpha(\tau)$ включает в себя множество допустимых решений $ \Delta \alpha (\tau+1)$, и последнее не пусто, из существования оптимального решения $\hat \alpha^*(\tau)$ следует существование оптимального решения $\Delta \alpha^*(\tau+1)$, причем с учетом сдвига на константу целевой функции справедлива следующая оценка: 
+\begin{equation}\label{chi-bound}
+\chi(\tau+1) \leq G_{\tau+1}Y_{\tau+1}^f(\alpha_0^*(\tau)-\alpha_0^c(\tau+1)) + \chi_{\tau+1}(\tau)
+\end{equation}
+
+Итак, разрешимость задач оптимального оценивания доказана. Остается продемонстрировать, что множество допустимых решений $\alpha_0(\tau+1)$ в задаче оптимального управления (\ref{control-qp-tau+1}) непусто --- тогда эта выпуклая задача квадратичного программирования имеет решение. Покажем, что $\alpha_0^c(\tau+1)$ --- допустимое решение. Уже по построению $\alpha_0^c(\tau+1)$ выполнены все условия, кроме условий на выходной сигнал: 
+\begin{equation}\label{y_0-c-constraint}
+G_{\tau+1} Y_{\tau+1}^f \alpha_0^c(\tau+1) \leq g_{\tau+1}-\chi(\tau+1).
+\end{equation}
+Воспользовавшись сначала (\ref{chi-bound}), а затем (\ref{alpha_0-tau-y}), получаем
+\begin{equation*}
+\begin{split}
+G_{\tau+1} Y_{\tau+1}^f \alpha_0^c(\tau+1) + \chi(\tau+1) & \leq G_{\tau+1}  Y_{\tau+1}^f \alpha_0^c(\tau+1) + \\
+& + G_{\tau+1}Y_{\tau+1}^f(\alpha_0^*(\tau)-\alpha_0^c(\tau+1)) + \chi_{\tau+1}(\tau) = \\
+& = G_{\tau+1}Y_{\tau+1}^f\alpha_0^*(\tau) + \chi_{\tau+1}(\tau) \leq g_{\tau+1},
+\end{split}
+\end{equation*}
+что доказывает (\ref{y_0-c-constraint}).
+Наконец, поскольку решение 
+$\alpha_0^c(\tau+1)$ допустимо, 
+\begin{equation*}
+\begin{split}
+\sum\limits_{t=\tau+1}^{T-1}\norm{u^*(t|\tau+1, u^p_{\tau+1}, \tilde y^p_{\tau+1})}^2 & \leq \alpha_0^c(\tau+1)^T (U_{\tau+1}^f)^T U_{\tau+1}^f \alpha_0^c(\tau+1) = \\
+& = \sum\limits_{t=\tau+1}^{T-1}\norm{u^*(t|\tau, u^p_\tau, \tilde y^p_\tau)}^2,
+\end{split}
+\end{equation*} что завершает доказательство всех пунктов теоремы.
+%мб разбить утверждения теоремы на i, ii, ...?
+$\Box$
+\end{proof}
+
+\begin{corollary}
+Если задачи оптимального оценивания (\ref{estimation}) и управления (\ref{control}) разрешимы в начальный момент времени $\tau=n$, то они разрешимы и в каждый из последующих моментов $\tau = n+1, \ldots, T-1$. При этом значение критерия качества $\tau$ 
+$$J(\tau) = \sum\limits_{t=0}^{\tau-1}\norm{u^p(t)}^2 + \sum\limits_{t=\tau}^{T-1}\norm{u^*(t|\tau, u^p_\tau, \tilde y^p_\tau)}^2$$
+является невозрастающей функцией.
+\end{corollary}
+
+Доказательство теоремы экстенсивно использует хвост ${(u^*(\tau+1|\tau)^T, \ldots, u^*(T-1|\tau)^T)^T}$ оптимального управления, полученного в предыдущей временной точке: не только стандартно, для текущей задачи оптимального управления, но и для предшествующего доказательства разрешимости задач оптимального оценивания. Это позволяет учесть взаимосвязь не только между соответствующими задачами предыдущего и текущего момента, но и между самими задачами текущего момента. В частности, помимо обоснования разрешимости, для задач оптимального оценивания приводится такая верхняя оценка решения $\chi(\tau+1)$, которая позже позмолит продемонстрировать допустимость управления $(u^*(\tau+1|\tau)^T, \ldots, u^*(T-1|\tau)^T)^T$.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\section{Недетерминированный случай: априорные измерения неточны}
+%В этом разделе будет кратко приведена идея развития результатов.
+%Интерес представляет случай, когда и априорные измерения содержат некоторую ошибку, т.е. $\tilde{y}^d = y^d + \xi^d.$
+%
+%Тогда $\tilde{Y}_{\tau}^p = Y_{\tau}^p + \mathit{\Xi}_{\tau}^p$,
+%$\tilde{Y}_{\tau}^f = Y_{\tau}^f + \mathit{\Xi}_{\tau}^f$, где
+%$$
+%\begin{pmatrix}
+%		\mathit{\Xi}_{\tau}^p\\
+%		\mathit{\Xi}_{\tau}^f
+%		\end{pmatrix}  = \begin{pmatrix}
+%  \xi(0) & \cdots & \xi(T^d-T)\\
+%  \vdots & \ddots & \vdots \\
+%  \xi(\tau-1) & \cdots & \xi(\tau - 1 + T^d-T) \\
+%  \hline
+%  \xi(\tau) & \cdots & \xi(\tau + T^d-T)\\
+%  \vdots & \ddots & \vdots \\
+%  \xi(T-1) & \cdots & \xi(T^d-1)
+%\end{pmatrix}
+%    = H_T(\xi^d).
+%$$
+%
+%В соответствии с этим задача оптимального оценивания (\ref{estimation}) перепишется следующим образом:
+%
+%\begin{equation} \label{estimation-noisy}
+%\chi_i(\tau) = \max\limits_{\hat{\alpha}, \xi_{\tau}, \xi^d} G_{\tau i}\hat{y},
+%\end{equation}
+%$$\begin{pmatrix}
+%U_\tau^p \\
+%Y_\tau^p + \mathit{\Xi}_\tau^p\\
+%U_\tau^f \\
+%Y_\tau^f + \mathit{\Xi}_\tau^f \\
+%\end{pmatrix} \hat{\alpha} = \begin{pmatrix}
+%u_\tau^p \\
+%\tilde{y}_\tau^p + \xi_{\tau}\\
+%0 \\
+%\hat{y}\\
+%\end{pmatrix},
+%$$
+%$$-\varepsilon \mathbbm{1} \leq \xi_{\tau} \leq \varepsilon \mathbbm{1},$$
+%$$-\varepsilon \mathbbm{1} \leq \xi^d \leq \varepsilon \mathbbm{1}.$$
+%
+%Задача (\ref{estimation-noisy}) представяет собой задачу с квадратичной целевой функцией и квадратичными ограничениями относительно переменной $(\hat{\alpha}, \xi^d)$. Сложность заключается в том, данная задача является невыпуклой. В дальнейшем было бы интересно исследовать эффективные способы решения этой невыпуклой задачи оптимального оценивания. Впоследствии можно использовать этот результат для решения соответствующей задачи оптимального управления в условии неточной априорной траектории.
+
+\bigskip
 В данной главе был предложен новый способ решения задачи, поставленной в предыдущей главе. Этот способ не требует знания реализации системы в пространстве состояний. Предложенный метод сводится к решению задач линейного и квадратичного программирования, базирующихся лишь на двух траекториях системы: априорной и наблюдаемой в процессе управления.
 
-Задача решена в предположении, что траектория, измеряемая в процессе управления, неточна, но априорная траектория известна точно. Было предложено дальнейшее направление исследования: случай, когда априорная траектория также зашумлена. 
+Доказано, что если в начальный момент управления эти задачи линейного и квадратичного программирования разрешимы, то соответсвующие задачи разрешимы и в каждый последующий момент, при этом значение критерия качества гарантированно не возрастает. 
+
+Задача решена в предположении, что траектория, измеряемая в процессе управления, неточна, но априорная траектория известна точно.% Было предложено дальнейшее направление исследования: случай, когда априорная траектория также зашумлена. 
