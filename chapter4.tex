@@ -1,57 +1,236 @@
-\chapter{ЧИСЛЕННЫЙ ПРИМЕР}\label{chap4}
-Применим изложенный метод для управления следующей системой размерности $n = 3$ с одним входом и одним выходом: 
-$$x(t+1) = \begin{pmatrix}
-0.8639 & 0.3075 & -0.2086 \\
--0.146 & 0.9265 & 0.245 \\
--0.1715 & -0.2195 & 1\\
-\end{pmatrix} 
+\chapter{ЧИСЛЕННЫЕ ПРИМЕРЫ}\label{chap4}
+В настоящей главе предложенная схема управления из главы \ref{chap3} применяется для решения ряда примеров. Приводятся основные элементы программной реализации в пакете Matlab и результаты численных экспериментов.
+\section{Элементы программной реализации}
+Решение задачи оптимального программного управления в момент времени $\tau$ происходит в функции control\_at\_tau. В качестве входных параметров передаются матрицы Ганкеля, разделенные на "прошлое"\ (Up, Yp) и "будущее"\ (Uf, Yf) для момента $\tau$; прошлая траектория up, yp; число EPS, определяющее точность измерений выходных сигналов; матрицы GG, gg и скаляры umax, umin, задающие ограничения на выходные сигналы и управления соответственно. 
+
+\begin{verbatim}
+function [isFeasible, uf] = control_at_tau ( Up, Yp, Uf, Yf, ...
+ up, yp, EPS, GG, gg, umax, umin)
+   [chiDet, solutionExistsDet] = ...
+       estimation_Det (Up, Yp, Uf, Yf, up, yp, EPS, GG);
+   %optimal input
+   [uf, exitflagDet] = ...
+       control_Det (Up, Yp, Uf, Yf, GG, gg, umax, umin, chiDet);
+
+    if exitflagDet == 1 && solutionExistsDet == 1 %both estimation ... 
+    and control problems feasible
+        isFeasible = true;
+    else
+        isFeasible = false;
+    end   
+end
+\end{verbatim}
+
+Сперва control\_at\_tau вызывает функцию estimation\_Det, которая реализует решение задач оптимального наблюдения. В теле estimation\_Det на основе данных (матриц Ганкеля Up, Yp, Uf, Yf и траектории наблюдаемого процесса u\_init, y\_init) и ограничения ошибки измерения EPS формируются матрицы A, b, Aeq, beq, задающие ограничения-неравенства и ограничения-равенства соответственно. Далее с этими ограничениями решается ряд задач линейного программирования с помощью встроенной функции linprog. 
+
+Решения данных задач формируют вектор chiDet, который функция estimation\_Det возвращает. Наряду с chiDet возвращается булевая переменная allexitflagsEqualOne. Эта переменная принимает значение True тогда и только тогда, когда linprog успешно решил все задачи. Здесь и далее переменные такого характера используются для эмпирического подтверждения теоремы \ref{main-theorem} о рекуррентной разрешимости.
+\begin{verbatim}
+function [chiDet, allexitflagsEqualOne] = estimation_Det(Up,... 
+Yp, Uf, Yf, u_init, y_init, EPS, GG)
+allexitflagsEqualOne = true;
+chiDet = zeros(length(GG(:,1)),1); %for each row of GG   
+
+%precalculate MATRICES for linprog
+A = vertcat(Yp, -Yp);
+b = vertcat(y_init + EPS.*ones(length(y_init),1), ... 
+    -y_init+EPS.*ones(length(y_init),1) ); 
+Aeq = vertcat(Up, Uf);
+beq = vertcat(u_init, zeros(length(Uf(:,1)), 1));
+
+options = optimoptions('linprog','Display','iter');
+for i = 1:length(GG(:,1))
+    [x, fval, exitflag, ~] = ...
+        linprog(-GG(i,:)*Yf, ... 
+        %-GG(i,:) instead of GG(i, :) for a max instead of min
+            A, b, Aeq, beq, ...
+                [], [], options);   
+    
+    if exitflag == 1
+        chiDet(i) = fval;
+    else
+        allexitflagsEqualOne = false;
+        diary on
+        'broken linprog'
+        exitflag
+        diary off
+    end
+end
+
+chiDet = -chiDet; % minus before chi to contain a max instead of min 
+end
+\end{verbatim}
+
+Затем в теле control\_at\_tau вычисленное значение chiDet передается в функцию control\_Det. Здесь сперва для нахождения $\alpha_0^*(\tau)$ с помощью встроенной функции quadprog решается задача квадратичного программирования, ограничения для которой задаются уже не только через Up, Yp, Uf, Yf, GG, gg, umax, umin, а с привлечением chiDet. После посредством умножения полученного решения alphaCdet Uf формируется оптимальное управление uOptDet, которое является главным выходным параметром.
+\begin{verbatim}
+function [uOptDet, exitflag] = control_Det (Up, Yp, Uf, Yf,...
+GG, gg, umax, umin, chiDet) 
+%Quadratic Problem for CONTROL
+[alphaCdet,~, exitflag, ~] = quadprog(transpose(Uf)*Uf, [],...
+vertcat(GG*Yf, Uf, -Uf), ...
+    vertcat(gg-chiDet, umax * ones(length(Uf(:,1)), 1),... 
+    -umin * ones(length(Uf(:, 1)), 1)),...
+    vertcat(Up, Yp), zeros(size(Up,1)+size(Yp,1),1));
+
+%optimal input
+uOptDet = Uf*alphaCdet;
+end
+\end{verbatim}
+
+Главный цикл итераций обернут в функцию control\_over\_T. В каждый момент времени $\tau$ вызывается функция control\_at\_tau, которая поставляет оптимальное управление uf исходя из априорных данных и наблюдаемой в реализуемом процессе траектории up, yp. Затем с помощью встроенной функции lsim моделируется подача на вход системы первого значения uf(1:udim) управления uf. К точному значению выходного сигнала, который возвращает lsim, прибавляется ограниченная ошибка, моделируемая как EPS*rand([y\_dim, 1]). Удлиненная новыми неточными данными наблюдаемая траектория up, yp вступает в следующую итерацию --- для момента $\tau+1$.
+
+\begin{verbatim}
+function [isFeasible, u_init, y_init, uopt, yopt, xopt, costs] = ...
+control_over_T (sys, x_init, u_init, y_init, Hu, Hy, GG, gg,...
+umax, umin, u_dim, y_dim, EPS, t_y)
+    isFeasible = true;
+    t_init = length(u_init)/u_dim + 1; %when we start control
+    T = length(Hu(:, 1))/u_dim; %prediction horizon
+    costs = zeros(T-t_init+1,1);
+    up = u_init;
+    yp = y_init;
+    GGtau = GG;
+    ggtau = gg;
+    for tau = t_init:T   
+        Up = Hu(1:(tau-1)*u_dim, :);
+        Uf = Hu((tau-1)*u_dim+1:end, :);
+        Yp = Hy(1:(tau-1)*y_dim, :);
+        Yf = Hy((tau-1)*u_dim+1:end, :);
+        
+        %-y_dim*2 inequality constraints each time
+        %if tau > t_init
+        %constraints enforced for the last t_y only
+
+        if tau > T-t_y
+            GGtau = GGtau(1+y_dim*2:end, :);
+            ggtau = ggtau(1+y_dim*2:end);
+        end
+        
+        if tau > t_init
+            GGtau = GGtau(:, 1+y_dim:end);
+        end      
+        
+        [isFeasibleatTau, uf] = control_at_tau (Up, Yp, Uf, Yf,...
+         up, yp, EPS, GGtau, ggtau, umax, umin);
+        costs(tau-t_init+1) =  up' * up + uf' * uf; 
+        
+        diary on
+        tau
+        isFeasibleatTau
+        uf
+        'cost at tau'
+        up' * up + uf' * uf 
+        diary off
+        
+        up = vertcat(up, uf(1:u_dim));
+        [yf, ~, ~] = lsim(sys, transpose(reshape(up, u_dim, [])), ...
+        [], x_init);
+        yp = vertcat(yp, transpose(yf(end,:)) + ...
+        EPS * rand([y_dim,1]));  
+    end
+end
+\end{verbatim}
+
+\section{Пример 1}
+Применим предложенный алгоритм для управления следующей системой:
+\begin{align}\label{example1}
+& x(t+1)  = \begin{pmatrix}
+0.9950  & 0.0998\\
+-0.0998 & 0.9950
+\end{pmatrix}
 x(t) + \begin{pmatrix}
-0.1239 \\
--0.0847 \\
-0.1602\\
-\end{pmatrix}u(t),$$
-$$y(t) = \begin{pmatrix}
-0.3 & 1.5 & -0.7 \\
-\end{pmatrix}x(t) + \begin{pmatrix}
--1.4
-\end{pmatrix}u(t), \quad t= 0, \ldots, T-1,$$
-минимизируя критерий качества $\sum_{t=0}^{T-1}\norm{u(t)}^2$ при гарантированном соблюдении ограничений $-1 \leq u(t) \leq 1, \quad -1 \leq y(t) \leq 1, \quad t = n, \ldots, T-1.$
-Момент начала управления такой же, как и размерность системы $n = 3$ --- этого достаточно для неявного задания начального условия $x_0.$ Горизонт планирования $T = 120.$ 
+0.0050\\
+0.0998
+\end{pmatrix}u(t), \\
+& y(t) = \begin{pmatrix}
+1 & 0
+\end{pmatrix}x(t), \quad t= 0, \ldots, T-1.\nonumber
+\end{align}
+Требуется минимизировать величину $\sum_{t=0}^{T-1}\norm{u(t)}^2$ при гарантированном соблюдении ограничений на значения выходных сигналов в последних $15$ временных точках:   $ |y(t)| \leq 0.3,$ $t = T-15, \ldots, T-1$. Доступны управления, для которых $|u(t)| \leq 0.7$,  $t = 0, \ldots, T-1$. Горизонт планирования $T=135$, абсолютное значение ошибки ограничено величиной $\varepsilon = 0.02$.
 
-Как было отмечено в Замечании \ref{lower bound on T^d}, длина априорной траектории $T^d$ должна быть не меньше $(n + T)(m + 1) - 1$, что в нашем случае, при $n = 3, m = 1$, означает $T^d \geq 2(3+T) - 1 = 245.$ Именно такой, наименьшей подходящей длины, была предварительно сгенерирована зашумленная траектория $\{u^d, \tilde{y}^d\}.$ Входные сигналы были сгенерированы как случайные числа, равномерно распределенные в $[-1, 1]$, а ошибки, добавляемые к "чистой"\ выходной траектории $y^d$, --- как случайные числа, равномерно распределенные в $[-\varepsilon, \varepsilon], \quad \varepsilon = 0.002.$
+Управление системой (\ref{example1}) начинается в момент $\tau = n = 2$.
 
-После таким же образом была сгенерирована траектория $\{u^p_3, \tilde{y}^p_3\}$, соответствующая движению системы до начала управления:
-$$u_3^p = \begin{pmatrix}
-   0.11004849  \\
-   0.59704522  \\
-   0.43059520 
-\end{pmatrix},
-y_3^p = \begin{pmatrix}
-  0.70244403  \\
-  -0.07057178 \\
-   0.07171414 
-\end{pmatrix}.
-$$
-Ниже приведены управление, выход и фазовая траектория, полученные в результате применения метода, предложенного в главе 3.
+Согласно замечанию \ref{remark on input length}, длина  $T^d$  априорной траектории должна быть не меньше $(n + T)(m + 1) - 1 = 273$. Именно такой, наименьшей подходящей длины, была  сгенерирована незашумленная априорная траектория $\{u^d, y^d\}$, в которой управления $u^d(t),$ $t=0,\ldots,T^d-1$, --- случайные числа, равномерно распределенные в $[0, 0.7]$.
 
-\begin{figure}
+Пусть в конкретном процессе реализовалось начальное состояние $x_0^p = (5, -2)$. Траектория $\{u^p_2, \tilde{y}^p_2\}$, соответствующая движению системы до начала управления, получена при  $u^p(0)=u^p(1)=0$ и $\xi(t)$, $t=0,1$,  выбранных случайным образом из отрезка $[-\varepsilon, \varepsilon]$.
+
+На рис. \ref{example1-u} изображена реализация $u^p(\tau)$, $\tau = 0, \ldots, T-1$, оптимальной обратной связи в рассматриваемом процессе. Выходной сигнал (см. рис. \ref{example1-y}) удовлетворяет ограничениям на промежутке от $\tau = 120$ до $\tau=134$. На рис. \ref{example1-x} изображена реализовавшаяся траектория системы (\ref{example1}). Априорная оценка значения критерия качества, полученная в $\tau = 2$ составила $ 46.3322$. В процессе управления значение критерия качества улучшилось до $42.5599$. Наиболее значительное изменение происходит при $\tau = 2, \ldots, 28$. Этот фрагмент приведен на рис. \ref{example1-J}. 
+
+\begin{figure}[h!]
 \centering
-\includegraphics[scale = 0.9]{ufinal.eps}
-\caption{\ }
-\end{figure}
-Значение критерия качества составляет $2.84904042$ на первой итерации, $2.60124510$ --- на последней.
-
-\begin{figure}
-\centering
-\includegraphics[scale = 0.9]{yfinal.eps}
-\caption{\ }
-\end{figure}
-
-На рис. \ref{phase} точкой $\circ$ отмечено начальное положение, а звездочкой *~--- конечное положение траектории.
-\begin{figure}
-\centering
-\includegraphics[scale= 0.9]{xfinal.eps}
-\caption{\ }
-\label{phase}
+\begin{subfigure}{0.5\textwidth}
+\includegraphics[width=\linewidth]{2d_final_u.eps}
+\caption{}
+\label{example1-u}
+\end{subfigure}\hfil
+\begin{subfigure}{0.5\textwidth}
+\includegraphics[width=\linewidth]{2d_final_y.eps}
+\caption{}
+\label{example1-y}
+\end{subfigure}
+%\end{figure}
+%\begin{figure}
+\begin{subfigure}{0.5\textwidth}
+\includegraphics[width=\linewidth]{2d_final_x.eps}
+\caption{}
+\label{example1-x}
+\end{subfigure}\hfil
+\begin{subfigure}{0.5\textwidth}
+\includegraphics[width=\linewidth]{2d_final_cost.eps}
+\caption{}
+\label{example1-J}
+\end{subfigure}
+\caption{Реализованная оптимальная обратная связь (a), соответствующий выходной сигнал (b), фазовая траектория (c), изменение критерия качества (d)}
 \end{figure}
 
+\section{Пример 2}
+Рассмотрим задачу оптимального управления для системы, которая была рассмотрена в \cite{BerberichMPC}:
+\begin{align}\label{example2}
+& x(t+1)  = \begin{pmatrix}
+0.921 & 0      & 0.041 & 0\\
+0     & 0.918  & 0     & 0.033\\
+0     & 0      & 0.924 & 0\\
+0     & 0      & 0     & 0.937
+\end{pmatrix}
+x(t) + \begin{pmatrix}
+0.017 & 0.001\\
+0.001 & 0.023\\
+0     & 0.061\\
+0.072 & 0
+\end{pmatrix}u(t), \\
+& y(t) = \begin{pmatrix}
+1 & 0 & 0 & 0\\
+0 & 1 & 0 & 0
+\end{pmatrix}x(t), \quad t= 0, \ldots, T-1.\nonumber
+\end{align}
+Снова требуется минимизировать величину $\sum_{t=0}^{T-1}\norm{u(t)}^2$ при следующих ограничениях: $ |y_i(t)| \leq 0.1,$ $t = T-20, \ldots, T-1$, $i=1,2$, и $|u_i(t)| \leq 0.8$,  $t = 0, \ldots, T-1$, $i=1,2$. Положим $T=55$, $\varepsilon = 0.02$.
+
+Отметим, что для данной системы управление можно было бы начать в момент $\tau =2$, поскольку наблюдений при $t=0,1$ достаточно для неявного задания начального условия $x_0$. Однако, поскольку математическая модель неизвестна, известна лишь точная размерность системы, $n=4$, управление системой (\ref{example2}) начинается в момент $\tau = n = 4$.
+
+Управления $u^d(t),$ $t=0,\ldots,T^d-1$ для априорной траектории $\{u^d, y^d\}$ длины $T^d = 176$ (см. замечание \ref{remark on input length}) были сгенерированы как случайные векторы, равномерно распределенные в $[-0.8, 0.8]^2$.
+
+Траектория $\{u^p_4, \tilde{y}^p_4\}$ конкретного процесса была сгенерирована для начального состояния $x_0^p = (4, 0, 1, -1)$ и $u^p(t)$, $\xi(t)$, $t=0,\ldots,3$,  выбранных случайным образом из квадратов $[0, 0.8]^2$, $[-\varepsilon, \varepsilon]^2,$ соответственно.
+
+Рис. \ref{fig:example2} иллюстрирует результаты применения предложенной схемы управления. Априорная оценка значения критерия качества, составлявшая $32.183$,  была улучшена до $21.857$. Начиная с момента $\tau = 29$ изменения не  существенны.
+
+\begin{figure}[htb]
+\centering
+\begin{subfigure}{0.5\textwidth}
+\includegraphics[width=\linewidth]{4du1-6.eps}
+\caption{}
+\end{subfigure}\hfil
+\begin{subfigure}{0.5\textwidth}
+\includegraphics[width=\linewidth]{4du2-6.eps}
+\caption{}
+\end{subfigure}
+\medskip
+\begin{subfigure}{0.5\textwidth}
+\includegraphics[width=\linewidth]{4dy-6.eps}
+\caption{}
+\end{subfigure}\hfil
+\begin{subfigure}{0.5\textwidth}
+\includegraphics[width=\linewidth]{4dcost-6.eps}
+\caption{}
+\end{subfigure}
+\caption{Реализация оптимальной обратной связи (a)--(b), соответствующие выходные сигналы (c), изменение критерия качества (d)}
+\label{fig:example2}
+\end{figure}
